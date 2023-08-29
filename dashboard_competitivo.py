@@ -1,4 +1,3 @@
-import asynchat
 import os
 import pandas as pd
 import numpy as np
@@ -13,7 +12,7 @@ st.set_page_config(page_title="Dashboard analisis competitivo", layout="wide")
 
 st.subheader('Analisis competitivo')
 
-precios = pd.read_excel('C:/Users/nicol/Documents/Oliver/Oliver/analisis_competitivo/precios.xlsx')
+precios = pd.read_excel('precios.xlsx')
 precios['quarter'] = pd.PeriodIndex(precios['fecha'], freq='Q').to_timestamp().date
 
 
@@ -36,7 +35,7 @@ with st.sidebar:
 precios['precio'] = (statistics.mode(precios['ml'])/precios['ml'])*precios['precio']
 precios = precios[precios['pais'].str.contains('|'.join(map(str, pais)))]
 
-me = pd.read_excel('C:/Users/nicol/Documents/Oliver/Oliver/analisis_competitivo/precios.xlsx',1)
+me = pd.read_excel('precios.xlsx',1)
 me.dropna(inplace=True)
 
 me = precios[['marca', 'sku', 'precio']].merge(me, left_on=['marca', 'sku'], right_on=['marca', 'sku'], how='left')
