@@ -55,6 +55,11 @@ d5 = precios[['pais', 'sku', 'precio']].groupby(by=['pais', 'sku'], as_index=Fal
 d5['precio'] = round(d5['precio'],2)
 d5 = d5[~d5.sku.isin(list(d4['sku']))]
 
+fig5 = px.scatter(me[['sku', 'e', 'm']].groupby(by='sku', as_index=False).agg('mean'),
+                   y='m', x='e', color='sku', height=500, opacity=0.6, title="E x M")
+fig5.update_traces(marker=dict(size=19))
+fig5.add_hline(y=3.5, line_dash="dash", opacity=0.3)
+
 
 def comparables(dx, dy, n):
     solution = pd.DataFrame()
@@ -75,6 +80,7 @@ def comparables(dx, dy, n):
     solution = pd.concat([solution, dx], ignore_index=True)
 
     return solution
+
 
 
 
@@ -103,6 +109,9 @@ with tab1:
         fig_comp.update_layout(yaxis={'categoryorder':'total ascending'})
         fig_comp.update_layout(yaxis_title=None)
         st.plotly_chart(fig_comp, theme="streamlit", use_container_width=True)
+    st.plotly_chart(fig5, theme="streamlit", use_container_width=True)
+    
+
         
 
 
@@ -184,20 +193,3 @@ with tab2:
 
     st.markdown('**Share of shelf x retailer x marca**')
     st.dataframe(d3.style.format('{:.0f}%',precision=0).background_gradient(cmap=cm, axis=1), use_container_width=True)
-
-       
-       
-       
-
-
-
-
-
-       
-
-
-
-
-
-
-
