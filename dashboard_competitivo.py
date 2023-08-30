@@ -14,6 +14,10 @@ st.subheader('Analisis competitivo')
 
 precios = pd.read_excel('precios.xlsx')
 precios['quarter'] = pd.PeriodIndex(precios['fecha'], freq='Q').to_timestamp().date
+conversiones = pd.read_excel('precios.xlsx',2)
+precios = precios.merge(conversiones, left_on = 'pais', right_on='pais', how='left')
+precios['precio'] = precios['precio']*precios['conversion']
+precios.drop(['moneda', 'conversion'], axis=1, inplace=True)
 
 
 
@@ -25,7 +29,8 @@ with st.sidebar:
 
     pais = st.multiselect(
              'Pais:',
-            list(precios.pais.unique()))
+            list(precios.pais.unique()),
+            default=['francia'])
     
     competidores = st.selectbox(
              '\# Competidores:',
@@ -113,8 +118,6 @@ with tab1:
     
 
         
-
-
 
 share = precios[['tienda', 'empresa', 'sku']]
 share['oliver_bin'] = np.where(share['empresa']=='oliver',1,0)
