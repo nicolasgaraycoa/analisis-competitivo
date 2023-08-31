@@ -56,8 +56,7 @@ fig4.update_traces(marker=dict(size=19))
 fig4.update_layout(yaxis={'categoryorder':'total ascending'})
 fig4.update_layout(yaxis_title=None)
 
-d5 = precios[['pais', 'sku', 'precio']].groupby(by=['pais', 'sku'], as_index=False).agg('mean')
-d5 = d5[~d5.sku.isin(list(d4['sku']))]
+
 
 fig5 = px.scatter(me[['sku', 'e', 'm']].groupby(by='sku', as_index=False).agg('mean').round(2),
                    y='m', x='e', color='sku', height=500, opacity=0.6, title="E x M")
@@ -65,26 +64,30 @@ fig5.update_traces(marker=dict(size=19))
 fig5.add_hline(y=3.5, line_dash="dash", opacity=0.3)
 
 
-def comparables(dx, dy, n):
-    dx = dx.drop('pais', axis=1).groupby(by='sku', as_index=False).agg('mean')
-    dy = dy.drop('pais', axis=1).groupby(by='sku', as_index=False).agg('mean')
+
+def comparables(dx, n):
+    da = dx[dx['empresa']=='oliver']
+    da = da[['sku', 'precio']].groupby(by='sku', as_index=False).agg('mean')
+    db = dx[['sku', 'precio']].groupby(by='sku', as_index=False).agg('mean')
+    db = db[~db['sku'].isin(da['sku'])]
+
     solution = pd.DataFrame()
     counter = 0
-    for i in dx['precio']:
+    for i in da['precio']:
         dist = []
-        for j in dy['precio']:
+        for j in db['precio']:
             dist.append(abs(j - i))
-            comp_index = sorted(range(len(dist)), key=lambda i: dist[i])[:n]
-        df_temp = pd.concat([dy.iloc[comp_index].reset_index(drop=True),
-                                 pd.Series([dx['sku'].iloc[counter]] * n, name='sku_ref')], axis=1)
-        solution = pd.concat([solution, df_temp], ignore_index=True)
+        comp_index = sorted(range(len(dist)), key=lambda i: dist[i])[:n]
+        df_temp = pd.concat([db.iloc[comp_index].reset_index(drop=True),
+                                 pd.Series([da['sku'].iloc[counter]] * n, name='sku_ref')], axis=1)
+        solution = pd.concat([solution, df_temp], axis=0)
         counter += 1
-    dx['sku_ref'] = dx['sku']
-    solution = pd.concat([solution, dx], ignore_index=True)
+    
+    da['sku_ref'] = da['sku']
+    solution = pd.concat([solution,da], axis=0).reset_index(drop=True)
     solution['precio'] = round(solution['precio'],2)
 
     return solution
-
 
 
 
@@ -108,7 +111,7 @@ with tab1:
     with col11:
         st.plotly_chart(fig4, theme="streamlit", use_container_width=True)
     with col12:
-        fig_comp = px.scatter(comparables(d4,d5,competidores),
+        fig_comp = px.scatter(comparables(precios, competidores),
                                y='sku_ref', x='precio', color='sku', height=660, opacity=0.6, title="Precio x SKU vs closest comparable(s)")
         fig_comp.update_traces(marker=dict(size=19))
         fig_comp.update_layout(yaxis={'categoryorder':'total ascending'})
